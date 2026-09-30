@@ -11,7 +11,15 @@
     <main class="app-main">
       <header class="app-head">
         <span class="head-desc">面向锅炉、压力容器、起重机械、电梯等特种设备的台账建档、日常点检、润滑保养、定期检验与隐患整改的一体化运维后台。</span>
-        <span class="head-user">当前值班：{{ store.operator }} · {{ store.shiftLabel }}</span>
+        <span class="head-user">
+          当前值班：{{ store.operator }} · {{ store.shiftLabel }}
+          <label class="head-unit">
+            使用单位
+            <select :value="store.useUnit" @change="onUnitChange">
+              <option v-for="unit in useUnits" :key="unit" :value="unit">{{ unit }}</option>
+            </select>
+          </label>
+        </span>
       </header>
       <RouterView />
     </main>
@@ -19,9 +27,29 @@
 </template>
 
 <script setup lang="ts">
-import { useSessionStore } from '@/stores/session'
+import { useSessionStore, USE_UNITS } from '@/stores/session'
 
 const store = useSessionStore()
+const useUnits = USE_UNITS
+
+function onUnitChange(event: Event) {
+  store.setUseUnit((event.target as HTMLSelectElement).value)
+}
 
 const navItems = [{ label: "运营概览", path: "/" }, { label: "锅炉设备", path: "/boiler" }, { label: "压力容器", path: "/vessel" }, { label: "压力管道", path: "/pressurepipe" }, { label: "起重机械", path: "/crane" }, { label: "电梯设备", path: "/elevator" }, { label: "场内机动车辆", path: "/forklift" }, { label: "点检计划", path: "/plan" }, { label: "点检记录", path: "/spotcheck" }, { label: "润滑保养", path: "/lubricate" }, { label: "定期检验", path: "/inspect" }, { label: "检验报告", path: "/report" }, { label: "隐患登记", path: "/hazard" }, { label: "整改闭环", path: "/rectify" }, { label: "使用登记", path: "/register" }, { label: "作业人员", path: "/operator" }, { label: "备件器材", path: "/spare" }, { label: "维保合同", path: "/contract" }, { label: "费用结算", path: "/settle" }]
 </script>
+
+<style scoped>
+.head-unit {
+  margin-left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.head-unit select {
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  font-size: 12px;
+}
+</style>

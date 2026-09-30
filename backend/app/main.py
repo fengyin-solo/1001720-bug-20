@@ -10,7 +10,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.routers import ROUTERS
+from app.services.elevator import ElevatorService
 from app.store import store
+
+elevator_service = ElevatorService()
 
 app = FastAPI(title="特种设备点检运维平台", version="1.0.0")
 
@@ -34,5 +37,17 @@ def health() -> dict[str, object]:
 
 @app.get("/api/overview")
 def overview() -> dict[str, object]:
-    """运营概览：把各业务模块的待处理量汇总成看板卡片。"""
-    return store.overview()
+    """运营概览：把各业务模块的待处理量汇总成看板卡片。
+
+    电梯设备的台数与列表取自同一份结果（电梯服务的无筛选总数），
+    不再让概览与列表各算各的。
+    """
+    data = store.overview()
+    elevator_total = elevator_service.summary()["全部"]
+    for item in data["modules"]:
+        if item["name"] == "elevator":
+            item["created"] = elevator_total
+    for card in data["cards"]:
+        if card["label"] == "今日新增":
+            card["value"] = sum(int(item["created"]) for item in data["modules"])
+    return data
