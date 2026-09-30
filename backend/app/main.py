@@ -34,5 +34,13 @@ def health() -> dict[str, object]:
 
 @app.get("/api/overview")
 def overview() -> dict[str, object]:
-    """运营概览：把各业务模块的待处理量汇总成看板卡片。"""
-    return store.overview()
+    """运营概览：把各业务模块的待处理量汇总成看板卡片。
+
+    电梯台数取自电梯列表的同一份结果（未经筛选的全量统计），
+    保证概览卡片与电梯列表、导出清单口径一致。
+    """
+    payload = store.overview()
+    from app.services.elevator import ElevatorService
+
+    payload["elevator"] = ElevatorService().overview_stats()
+    return payload
